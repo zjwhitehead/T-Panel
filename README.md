@@ -2,7 +2,7 @@
  * @Description: None
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditTime: 2024-07-22 16:49:31
+ * @LastEditTime: 2024-07-22 16:55:31
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Panel</h1>
@@ -10,11 +10,6 @@
 ## **English | [中文](./README_CN.md)**
 
 ## Version iteration:
-| Version                              | Update date                       |
-| :-------------------------------: | :-------------------------------: |
-| T-Panel_V1.0                      | 2023-11-23                         |
-| T-Panel_V1.2                      | 2023-12-11                         |
-
 | Version     | Update date       |Update description|
 | :----------------: | :---------------: |:---------------: |
 | T-Panel_V1.0-V1.1     | 2023-11-23    |Original version      |
