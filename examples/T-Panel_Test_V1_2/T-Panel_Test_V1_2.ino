@@ -3,8 +3,8 @@
  * @version: V1.0.2
  * @Author: LILYGO_L
  * @Date: 2023-09-16 10:47:28
- * @LastEditors: LILYGO_L
- * @LastEditTime: 2024-01-19 11:14:52
+ * @LastEditors: Xk_w
+ * @LastEditTime: 2024-06-04 10:10:27
  * @License: GPL 3.0
  */
 // #define TOUCH_MODULES_GT911
@@ -67,8 +67,9 @@ size_t cycleInterval = 0;
 
 bool wifi_connection_failure_flag = false;
 uint32_t wifi_time_delay = 0;
+static uint8_t gfx_rotation = 2;
 
-TouchLib touch(Wire, IIC_SDA, IIC_SCL, CST3240_Address);
+TouchLib touch(Wire, IIC_SDA, IIC_SCL, CST3240_ADDRESS);
 
 Arduino_DataBus *bus = new Arduino_XL9535SWSPI(IIC_SDA /* SDA */, IIC_SCL /* SCL */, -1 /* XL PWD */,
                                                XL95X5_CS /* XL CS */, XL95X5_SCLK /* XL SCK */, XL95X5_MOSI /* XL MOSI */);
@@ -82,7 +83,7 @@ Arduino_ESP32RGBPanel *rgbpanel = new Arduino_ESP32RGBPanel(
     10 /* pclk_active_neg */, 6000000L /* prefer_speed */, false /* useBigEndian */,
     0 /* de_idle_high*/, 0 /* pclk_idle_high */);
 Arduino_RGB_Display *gfx = new Arduino_RGB_Display(
-    LCD_WIDTH /* width */, LCD_HEIGHT /* height */, rgbpanel, 0 /* rotation */, true /* auto_flush */,
+    LCD_WIDTH /* width */, LCD_HEIGHT /* height */, rgbpanel, 2 /* rotation */, true /* auto_flush */,
     bus, -1 /* RST */, st7701_type9_init_operations, sizeof(st7701_type9_init_operations));
 
 #if defined T_Panel_V1_2_CAN
@@ -223,7 +224,7 @@ void BLE_Test(void)
         touch.read();
         TP_Point t = touch.getPoint(0);
 
-        if ((t.x > 80 && t.x < 360) && (t.y > 350 && t.y < 420))
+        if ((t.x > 80 && t.x < 360) && (t.y > (480 - 420) && t.y < (480 - 350)))
         {
             BLE_Pairing_Flag = false;
             break;
@@ -536,6 +537,8 @@ void setup()
     CAN_Drive_Initialization();
 #endif
 
+    pinMode(0, INPUT_PULLUP);
+
     pinMode(ESP32H2_BOOT, OUTPUT);
     digitalWrite(ESP32H2_BOOT, HIGH); // ESP32H2的Boot引脚置高
 
@@ -664,6 +667,50 @@ void setup()
 
 void loop()
 {
+    if (digitalRead(0) == LOW)
+    {
+        delay(300);
+
+        gfx_rotation++;
+        if (gfx_rotation > 3)
+        {
+            gfx_rotation = 0;
+        }
+        gfx->setRotation(gfx_rotation);
+
+        int8_t temp = Image_Flag - 1;
+        if (temp < 0)
+        {
+            temp = 4;
+        }
+        switch (temp)
+        {
+        case 0:
+            gfx->draw16bitRGBBitmap(0, 0, (uint16_t *)gImage_1, 480, 480); // RGB
+            break;
+        case 1:
+            gfx->draw16bitRGBBitmap(0, 0, (uint16_t *)gImage_2, 480, 480); // RGB
+            break;
+        case 2:
+            gfx->draw16bitRGBBitmap(0, 0, (uint16_t *)gImage_3, 480, 480); // RGB
+            break;
+        case 3:
+            gfx->draw16bitRGBBitmap(0, 0, (uint16_t *)gImage_4, 480, 480); // RGB
+            break;
+        case 4:
+            gfx->draw16bitRGBBitmap(0, 0, (uint16_t *)gImage_5, 480, 480); // RGB
+            break;
+
+        default:
+            break;
+        }
+        gfx->fillRect(230, 330, 280, 150, BLACK);
+        gfx->setCursor(265, 340);
+        gfx->setTextSize(2);
+        gfx->setTextColor(BLUE);
+        gfx->printf("UART Information");
+    }
+
     if (Uart_Start == 1)
     {
 #if defined T_Panel_V1_2_CAN
@@ -953,28 +1000,41 @@ void loop()
             {
             case 0:
                 gfx->draw16bitRGBBitmap(0, 0, (uint16_t *)gImage_1, 480, 480); // RGB
-                Serial.printf("[1] point x: %d  point y: %d \r\n", t.x, t.y);
-                gfx->printf("[1] point x: %d  point y: %d \r\n", t.x, t.y);
                 break;
             case 1:
                 gfx->draw16bitRGBBitmap(0, 0, (uint16_t *)gImage_2, 480, 480); // RGB
-                Serial.printf("[1] point x: %d  point y: %d \r\n", t.x, t.y);
-                gfx->printf("[1] point x: %d  point y: %d \r\n", t.x, t.y);
                 break;
             case 2:
                 gfx->draw16bitRGBBitmap(0, 0, (uint16_t *)gImage_3, 480, 480); // RGB
-                Serial.printf("[1] point x: %d  point y: %d \r\n", t.x, t.y);
-                gfx->printf("[1] point x: %d  point y: %d \r\n", t.x, t.y);
                 break;
             case 3:
                 gfx->draw16bitRGBBitmap(0, 0, (uint16_t *)gImage_4, 480, 480); // RGB
-                Serial.printf("[1] point x: %d  point y: %d \r\n", t.x, t.y);
-                gfx->printf("[1] point x: %d  point y: %d \r\n", t.x, t.y);
                 break;
             case 4:
                 gfx->draw16bitRGBBitmap(0, 0, (uint16_t *)gImage_5, 480, 480); // RGB
-                Serial.printf("[1] point x: %d  point y: %d \r\n", t.x, t.y);
+                break;
+
+            default:
+                break;
+            }
+            Serial.printf("[1] point x: %d  point y: %d \r\n", t.x, t.y);
+            switch (gfx_rotation)
+            {
+            case 0:
+                gfx->setCursor(t.x, t.y);
                 gfx->printf("[1] point x: %d  point y: %d \r\n", t.x, t.y);
+                break;
+            case 1:
+                gfx->setCursor(t.y, LCD_WIDTH - t.x);
+                gfx->printf("[1] point x: %d  point y: %d \r\n", t.y, LCD_WIDTH - t.x);
+                break;
+            case 2:
+                gfx->setCursor(LCD_WIDTH - t.x, LCD_HEIGHT - t.y);
+                gfx->printf("[1] point x: %d  point y: %d \r\n", LCD_WIDTH - t.x, LCD_HEIGHT - t.y);
+                break;
+            case 3:
+                gfx->setCursor(LCD_HEIGHT - t.y, t.x);
+                gfx->printf("[1] point x: %d  point y: %d \r\n", LCD_HEIGHT - t.y, t.x);
                 break;
 
             default:

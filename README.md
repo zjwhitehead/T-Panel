@@ -1,10 +1,8 @@
 <!--
  * @Description: None
- * @version: V1.0.0
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditors: LILYGO_L
- * @LastEditTime: 2024-02-03 15:07:54
+ * @LastEditTime: 2024-07-22 16:49:31
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Panel</h1>
@@ -17,12 +15,19 @@
 | T-Panel_V1.0                      | 2023-11-23                         |
 | T-Panel_V1.2                      | 2023-12-11                         |
 
+| Version     | Update date       |Update description|
+| :----------------: | :---------------: |:---------------: |
+| T-Panel_V1.0-V1.1     | 2023-11-23    |Original version      |
+| T-Panel_V1.2       | 2023-12-11          |Modify the RS485 module to be replaceable with either an RS485 or CAN module|
+| T-Panel_V1.3       | 2024-05-08          |Modify the structure|
+
 ## PurchaseLink
 
 | Product                     | SOC           |  FLASH  |  PSRAM   | Link                   |
 | :------------------------: | :-----------: |:-------: | :---------: | :------------------: |
-| T-Panel_V1.0   | ESP32S3 |   16M   | 8M  | [Not yet sold]()  |
-| T-Panel_V1.2   | ESP32S3 |   16M   | 8M  | [Not yet sold]()  |
+| T-Panel_V1.0-V1.1   | ESP32S3 |   16M   | 8M  |  [LILYGO Mall](https://www.lilygo.cc/products/t-panel-s3?_pos=1&_sid=f6ce2c79c&_ss=r)  |
+| T-Panel_V1.2   | ESP32S3 |   16M   | 8M  |  [LILYGO Mall](https://www.lilygo.cc/products/t-panel-s3?_pos=1&_sid=f6ce2c79c&_ss=r)  |
+| T-Panel_V1.3   | ESP32S3 |   16M   | 8M  |  [LILYGO Mall](https://www.lilygo.cc/products/t-panel-s3?_pos=1&_sid=f6ce2c79c&_ss=r)  |
 
 ## Directory
 - [Describe](#describe)
@@ -37,7 +42,7 @@
 
 ## Describe
 
- T-Panel is an intelligent home product featuring a 480x480 RGB pixel large screen. It is controlled by the high-performance ESP32S3 chip onboard, which can communicate and exchange data with ESP32H2. The product also incorporates an RS485 chip for long-distance transmission of other devices, and its wide voltage input enhances compatibility.
+ T-Panel is an intelligent home product featuring a 480x480 RGB pixel large screen. It is controlled by the high-performance ESP32S3 chip onboard, which can communicate and exchange data with ESP32H2. The product also incorporates an RS485 chip for long-distance transmission of other devices, and its wide voltage input enhances compatibility.The screen of the T-Panel version is touch-enabled.
 
 ## Preview
 
@@ -53,8 +58,6 @@
 * PSRAM: 8MB
 * FLASH: 16MB
 * Others: For more information, please visit[Espressif Official ESP32-S3datasheet](https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_cn.pdf)
-
-<br />
 
 * MCU2: ESP32-H2-MINI-1
 * FLASH: 4MB
@@ -83,18 +86,52 @@
 * Chip: RS485 
 * Using Bus Communication Protocol: uart communication
 
-* Chip: CAN
-* Using Bus Communication Protocol: TWAI communication
+> #### T-Panel_V1.2-V1.3
+> * Using Bus Communication Protocol: CAN
+> * Using Bus Communication Protocol : TWAI
+
+### 6. Touch
+* Chip: CST3240
+* Using Bus Communication Protocol: IIC
 
 ## QuickStart
 
-### Attention: Currently, ESP32H2 can only be programmed using the Arduino IDE
-
 ### Examples Support
 
-<p align="center" width="100%">
-    <img src="image/T-Panel_Example_Support.png" alt="example">
-</p>
+### Attention: Currently, ESP32H2 can only be programmed using the Arduino IDE
+
+#### ESP32-S3
+| Example | Support IDE And Version| Description | Picture |
+| ------  | ------  | ------ | ------ | 
+| [GFX_CST3240_Image_Rotation](./examples/GFX_CST3240_Image_Rotation) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [GFX_PDQ](./examples/GFX_PDQ) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [RS485](./examples/RS485) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [IIC_Scan_2](./examples/IIC_Scan_2) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [SD](./examples/SD) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [ESP32S3_ESP32H2_Uart](./examples/ESP32S3_ESP32H2_Uart) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [T-Panel_Test_V1_0-V1_1](./examples/T-Panel_Test_V1_0-V1_1) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` | Out-of-factory original test file|  |
+| [T-Panel_Test_V1_2](./examples/T-Panel_Test_V1_2) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` | Out-of-factory original test file|  |
+| [Wifi](./examples/Wifi) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [XL95x5](./examples/XL95x5) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [Lvgl](./examples/Lvgl) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [Lvgl_benchmark](./examples/Lvgl_benchmark) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+
+| Firmware | Description | Picture |
+| ------  | ------  | ------ |
+| [T-Panel_Test_V1_0-V1_1](./firmware/[ESP32S3][T-Panel_V1.0-V1.1][T-Panel_Test_V1_0-V1_1]_firmware_V1.0.4.bin) | Out-of-factory original test file |  |
+| [T-Panel_Test_V1_2(RS485)](./firmware/[ESP32S3][T-Panel_V1.2][T-Panel_Test_V1_2]_firmware_V1.0.2(RS485).bin) | Out-of-factory original test file | |
+| [T-Panel_Test_V1_2(CAN)](./firmware/[ESP32S3][T-Panel_V1.2][T-Panel_Test_V1_2]_firmware_V1.0.2(CAN).bin) | Out-of-factory original test file | |
+
+#### ESP32-H2
+| Example | Support IDE And Version| Description | Picture |
+| ------  | ------  | ------ | ------ | 
+| [ESP32H2_Uart_Callback](./examples/ESP32H2_Uart_Callback) |`[Arduino IDE][esp32-libs_V3.0.2]` | The factory initial raw files are used with the ESP32-S3 main chip in conjunction with the T-Panel_Test_V1.0-V1.1 version |  |
+| [ESP32H2_BLE_Test](./examples/ESP32H2_BLE_Test) |`[Arduino IDE][esp32-libs_V3.0.2]` | The factory initial raw files are used with the ESP32-S3 main chip in conjunction with the T-Panel_Test_V1.2 version |  |
+
+| Firmware | Description | Picture |
+| ------  | ------  | ------ |
+| [ESP32H2_Uart_Callback](./firmware/[ESP32H2][T-Panel_V1.0-V1.1][ESP32H2_Uart_Callback]_firmware_V1.0.2.bin) | The factory initial raw files are used with the ESP32-S3 main chip in conjunction with the T-Panel_Test_V1.0-V1.1 version |  |
+| [ESP32H2_BLE_Test](./firmware/[ESP32H2][T-Panel_V1.2][ESP32H2_BLE_Test]_firmware_V1.0.2.bin) | The factory initial raw files are used with the ESP32-S3 main chip in conjunction with the T-Panel_Test_V1.2 version |  |
 
 ### PlatformIO
 1. Install[VisualStudioCode](https://code.visualstudio.com/Download),Choose installation based on your system type.
@@ -121,7 +158,7 @@
 #### ESP32-S3
 | Setting                               | Value                                 |
 | :-------------------------------: | :-------------------------------: |
-| Board                                | Dfrobot Firebeetle 2 ESP32-S3|
+| Board                                | ESP32S3 Dev Module           |
 | Upload Speed                     | 921600                               |
 | USB Mode                           | Hardware CDC and JTAG     |
 | USB CDC On Boot                | Enabled                             |
@@ -206,21 +243,18 @@
 | MOSI                  | IO35                  |
 | MISO                  | IO37                    |
 
-| RS485 Pin(T-Panel_V1.0)           | ESP32S3 Pin      | XL95X5 Pin      |
-| :------------------: | :------------------:| :------------------:|
-| TX                     | ESP32S3_IO15                  |NULL           |
-| RX                     | ESP32S3_IO16                  |NULL           |
-| CON                  |          NULL           | XL95X5_IO7        |
+> #### T-Panel_V1.0-V1.1
+> | RS485 pin    | ESP32S3 pin      |XL95x5 pin     |
+> | :------------------: | :------------------:| :------------------:|
+> | TX                     | ESP32S3_IO15                  |NULL           |
+> | RX                     | ESP32S3_IO16                  |NULL           |
+> | CON                  |          NULL           | XL95x5_IO7        |
 
-| RS485 Pin(T-Panel_V1.2)           | ESP32S3 Pin      | 
-| :------------------: | :------------------:|
-| TX                     | ESP32S3_IO16                  |
-| RX                     | ESP32S3_IO15                  |
-
-| CAN Pin(T-Panel_V1.2)           | ESP32S3 Pin      | 
-| :------------------: | :------------------:|
-| TX                     | ESP32S3_IO16                  |
-| RX                     | ESP32S3_IO15                  |
+> #### T-Panel_V1.2
+> | RS485 and CAN share pins    | ESP32S3 pin      |
+> | :------------------: | :------------------:| 
+> | TX                     | ESP32S3_IO16     |
+> | RX                     | ESP32S3_IO15      |
 
 | Function     | ESP32H2 Pin     | ESP32S3 Pin      | XL95X5 Pin      |
 | :-------: | :----------: |  :------------------:|:------------------:|
@@ -258,7 +292,7 @@
 * A. Please hold down the "BOOT-0" button and try downloading the program again.
 
 ## Project
-* [T-Panel_V1.0](./project/T-Panel_V1.0.pdf)
+* [T-Panel_V1.2](./project/T-Panel_V1.2.pdf)
 
 ## Information
 * [Espressif](https://www.espressif.com/en/support/documents/technical-documents)

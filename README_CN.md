@@ -1,10 +1,8 @@
 <!--
  * @Description: None
- * @version: V1.0.0
  * @Author: LILYGO_L
  * @Date: 2023-09-11 16:13:14
- * @LastEditors: LILYGO_L
- * @LastEditTime: 2024-03-01 13:50:18
+ * @LastEditTime: 2024-07-22 16:49:34
  * @License: GPL 3.0
 -->
 <h1 align = "center">T-Panel</h1>
@@ -12,17 +10,18 @@
 ## **[English](./README.md) | 中文**
 
 ## 版本迭代:
-| Version                               | Update date                       |
-| :-------------------------------: | :-------------------------------: |
-| T-Panel_V1.0                      | 2023-11-23                         |
-| T-Panel_V1.2                      | 2023-12-11                         |
+| Version     | Update date       |Update description|
+| :----------------: | :---------------: |:---------------: |
+| T-Panel_V1.0-V1.1     | 2023-11-23    |初始版本      |
+| T-Panel_V1.2       | 2023-12-11          |将RS485模块修改成可替换模块RS485和CAN|
+| T-Panel_V1.3       | 2024-05-08          |修改结构|
 
 ## 购买链接
-
 | Product                     | SOC           |  FLASH  |  PSRAM   | Link                   |
 | :------------------------: | :-----------: |:-------: | :---------: | :------------------: |
-| T-Panel_V1.0   | ESP32S3 |   16M   | 8M  |  [暂未售卖]()  |
-| T-Panel_V1.2   | ESP32S3 |   16M   | 8M  |  [暂未售卖]()  |
+| T-Panel_V1.0-V1.1   | ESP32S3 |   16M   | 8M  |  [LILYGO Mall](https://www.lilygo.cc/products/t-panel-s3?_pos=1&_sid=f6ce2c79c&_ss=r)  |
+| T-Panel_V1.2   | ESP32S3 |   16M   | 8M  |  [LILYGO Mall](https://www.lilygo.cc/products/t-panel-s3?_pos=1&_sid=f6ce2c79c&_ss=r)  |
+| T-Panel_V1.3   | ESP32S3 |   16M   | 8M  |  [LILYGO Mall](https://www.lilygo.cc/products/t-panel-s3?_pos=1&_sid=f6ce2c79c&_ss=r)  |
 
 ## 目录
 - [描述](#描述)
@@ -37,7 +36,7 @@
 
 ## 描述
 
-T-Panel是一款拥有480x480RGB像素大屏的智能家居产品。板载高性能ESP32S3芯片控制屏幕，可与ESP32H2相互通信交换数据。产品还搭载RS485芯片可实现对其他设备进行远距离传输，宽电压输入使得产品兼容性更高。
+T-Panel是一款拥有480x480RGB像素大屏的智能家居产品。板载高性能ESP32S3芯片控制屏幕，可与ESP32H2相互通信交换数据。产品还搭载RS485芯片可实现对其他设备进行远距离传输，宽电压输入使得产品兼容性更高。T-Panel版本的屏幕是带触摸的。
 
 ## 预览
 
@@ -54,8 +53,6 @@ T-Panel是一款拥有480x480RGB像素大屏的智能家居产品。板载高性
 * PSRAM：8MB
 * FLASH：16MB
 * 其他说明：更多资料请访问[乐鑫官方ESP32­-S3 数据手册](https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_cn.pdf)
-
-<br />
 
 * MCU2：ESP32-H2-MINI-1
 * FLASH：4MB
@@ -85,18 +82,52 @@ T-Panel是一款拥有480x480RGB像素大屏的智能家居产品。板载高性
 * 模块：RS485 
 * 使用总线通信协议：UART通信
 
-* 模块：CAN
-* 使用总线通信协议：TWAI通信
+> #### T-Panel_V1.2-V1.3
+> * 模块：CAN
+> * 总线通信协议：TWAI通信
+
+### 6. 屏幕触摸
+* 芯片：CST3240
+* 使用总线通信协议：IIC通信
 
 ## 快速开始
 
-### 注意事项：目前ESP32H2只能使用Arduino IDE进行编程
-
 ### 示例支持
 
-<p align="center" width="100%">
-    <img src="image/T-Panel_Example_Support.png" alt="example">
-</p>
+### 注意事项：目前ESP32H2只能使用Arduino IDE进行编程
+
+#### ESP32-S3
+| Example | Support IDE And Version| Description | Picture |
+| ------  | ------  | ------ | ------ | 
+| [GFX_CST3240_Image_Rotation](./examples/GFX_CST3240_Image_Rotation) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [GFX_PDQ](./examples/GFX_PDQ) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [RS485](./examples/RS485) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [IIC_Scan_2](./examples/IIC_Scan_2) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [SD](./examples/SD) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [ESP32S3_ESP32H2_Uart](./examples/ESP32S3_ESP32H2_Uart) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [T-Panel_Test_V1_0-V1_1](./examples/T-Panel_Test_V1_0-V1_1) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` | 出厂初始测试文件|  |
+| [T-Panel_Test_V1_2](./examples/T-Panel_Test_V1_2) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` | 出厂初始测试文件|  |
+| [Wifi](./examples/Wifi) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [XL95x5](./examples/XL95x5) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [Lvgl](./examples/Lvgl) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+| [Lvgl_benchmark](./examples/Lvgl_benchmark) | `[Platformio IDE][espressif32-v6.5.0]`<br />`[Arduino IDE][esp32_v2.0.14]` |  |  |
+
+| Firmware | Description | Picture |
+| ------  | ------  | ------ |
+| [T-Panel_Test_V1_0-V1_1](./firmware/[ESP32S3][T-Panel_V1.0-V1.1][T-Panel_Test_V1_0-V1_1]_firmware_V1.0.4.bin) | 出厂初始测试文件 |  |
+| [T-Panel_Test_V1_2(RS485)](./firmware/[ESP32S3][T-Panel_V1.2][T-Panel_Test_V1_2]_firmware_V1.0.2(RS485).bin) | 出厂初始测试文件 | |
+| [T-Panel_Test_V1_2(CAN)](./firmware/[ESP32S3][T-Panel_V1.2][T-Panel_Test_V1_2]_firmware_V1.0.2(CAN).bin) | 出厂初始测试文件 | |
+
+#### ESP32-H2
+| Example | Support IDE And Version| Description | Picture |
+| ------  | ------  | ------ | ------ | 
+| [ESP32H2_Uart_Callback](./examples/ESP32H2_Uart_Callback) |`[Arduino IDE][esp32-libs_V3.0.2]` | 出厂初始测试文件搭配T-Panel_Test_V1_0-V1_1版本的ESP32-S3主芯片使用 |  |
+| [ESP32H2_BLE_Test](./examples/ESP32H2_BLE_Test) |`[Arduino IDE][esp32-libs_V3.0.2]` | 出厂初始测试文件搭配T-Panel_Test_V1_2版本的ESP32-S3的主芯片使用 |  |
+
+| Firmware | Description | Picture |
+| ------  | ------  | ------ |
+| [ESP32H2_Uart_Callback](./firmware/[ESP32H2][T-Panel_V1.0-V1.1][ESP32H2_Uart_Callback]_firmware_V1.0.2.bin) | 出厂初始测试文件搭配T-Panel_Test_V1_0-V1_1版本的ESP32-S3主芯片使用 |  |
+| [ESP32H2_BLE_Test](./firmware/[ESP32H2][T-Panel_V1.2][ESP32H2_BLE_Test]_firmware_V1.0.2.bin) | 出厂初始测试文件搭配T-Panel_Test_V1_2版本的ESP32-S3的主芯片使用 |  |
 
 ### PlatformIO
 1. 安装[VisualStudioCode](https://code.visualstudio.com/Download)，根据你的系统类型选择安装。
@@ -123,7 +154,7 @@ T-Panel是一款拥有480x480RGB像素大屏的智能家居产品。板载高性
 #### ESP32-S3
 | Setting                               | Value                                 |
 | :-------------------------------: | :-------------------------------: |
-| Board                                | Dfrobot Firebeetle 2 ESP32-S3|
+| Board                                | ESP32S3 Dev Module            |
 | Upload Speed                     | 921600                               |
 | USB Mode                           | Hardware CDC and JTAG     |
 | USB CDC On Boot                | Enabled                             |
@@ -206,21 +237,18 @@ T-Panel是一款拥有480x480RGB像素大屏的智能家居产品。板载高性
 | MOSI                  | IO35                  |
 | MISO                  | IO37                    |
 
-| RS485引脚（T-Panel_V1.0）           | ESP32S3引脚      | XL95X5引脚      |
-| :------------------: | :------------------:| :------------------:|
-| TX                     | ESP32S3_IO15                  |NULL           |
-| RX                     | ESP32S3_IO16                  |NULL           |
-| CON                  |          NULL           | XL95X5_IO7        |
+> #### T-Panel_V1.0-V1.1
+> | RS485引脚    | ESP32S3引脚      |XL95x5引脚      |
+> | :------------------: | :------------------:| :------------------:|
+> | TX                     | ESP32S3_IO15                  |NULL           |
+> | RX                     | ESP32S3_IO16                  |NULL           |
+> | CON                  |          NULL           | XL95x5_IO7        |
 
-| RS485引脚（T-Panel_V1.2）           | ESP32S3引脚      | 
-| :------------------: | :------------------:| 
-| TX                     | ESP32S3_IO16                  |
-| RX                     | ESP32S3_IO15                  |
-
-| CAN引脚（T-Panel_V1.2）           | ESP32S3引脚      | 
-| :------------------: | :------------------:|
-| TX                     | ESP32S3_IO16                  |
-| RX                     | ESP32S3_IO15                  |
+> #### T-Panel_V1.2
+> | RS485和CAN共用引脚    | ESP32S3引脚      |
+> | :------------------: | :------------------:| 
+> | TX                     | ESP32S3_IO16     |
+> | RX                     | ESP32S3_IO15      |
 
 | 功能     | ESP32H2引脚     | ESP32S3引脚      | XL95X5引脚      |
 | :-------: | :----------: |  :------------------:|:------------------:|
@@ -259,7 +287,7 @@ T-Panel是一款拥有480x480RGB像素大屏的智能家居产品。板载高性
 * A. 请按住“BOOT-0”按键重新下载程序。
 
 ## 项目
-* [T-Panel_V1.0](./project/T-Panel_V1.0.pdf)
+* [T-Panel_V1.2](./project/T-Panel_V1.2.pdf)
 
 ## 资料
 * [Espressif](https://www.espressif.com/en/support/documents/technical-documents)
