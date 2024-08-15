@@ -6,6 +6,7 @@
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include "Adafruit_BMP3XX.h"
+#include <SparkFun_u-blox_GNSS_v3.h>
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 #define SENSOR_UPDATE_INTERVAL 1000  // Update sensor every 1000ms (1 second)
@@ -14,6 +15,7 @@ static bool Touch_Int_Flag = false;
 
 TouchLib touch(Wire, TOUCH_SDA, TOUCH_SCL, CST3240_ADDRESS);
 Adafruit_BMP3XX bmp;
+SFE_UBLOX_GNSS myGNSS; // Add this line
 
 static lv_disp_draw_buf_t draw_buf;
 static lv_disp_drv_t disp_drv;
@@ -34,11 +36,31 @@ Arduino_RGB_Display *gfx = new Arduino_RGB_Display(
     bus, -1, st7701_type9_init_operations, sizeof(st7701_type9_init_operations));
 
 lv_obj_t *sensor_label;
+lv_obj_t *gps_label; // Add this line
 
-// Cached sensor values
+// Cached BMP sensor values
 float cached_altitude = 0;
 float cached_temperature_f = 0;
 unsigned long last_sensor_update = 0;
+
+// Cached GPS values
+long cached_latitude = 0;
+long cached_longitude = 0;
+long cached_speed = 0;
+long cached_heading = 0;
+unsigned long last_gps_update = 0;
+
+void update_gps_readings()
+{
+    unsigned long current_time = millis();
+    if (current_time - last_gps_update >= SENSOR_UPDATE_INTERVAL) {
+        cached_latitude = myGNSS.getLatitude();
+        cached_longitude = myGNSS.getLongitude();
+        cached_speed = myGNSS.getGroundSpeed();
+        cached_heading = myGNSS.getHeading();
+        last_gps_update = current_time;
+    }
+}
 
 void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
@@ -105,13 +127,22 @@ void update_sensor_readings()
     }
 }
 
-void update_sensor_display(lv_timer_t * timer)
+void update_display(lv_timer_t * timer)
 {
-    update_sensor_readings();  // This will only update the cache if enough time has passed
+    update_sensor_readings();
+    update_gps_readings();
 
-    static char buf[64];
-    snprintf(buf, sizeof(buf), "Altitude: %.2f m\nTemp: %.2f °F", cached_altitude, cached_temperature_f);
-    lv_label_set_text(sensor_label, buf);
+    static char sensor_buf[64];
+    snprintf(sensor_buf, sizeof(sensor_buf), "Alt: %.1f m\nTemp: %.1f °F", cached_altitude, cached_temperature_f);
+    lv_label_set_text(sensor_label, sensor_buf);
+
+    static char gps_buf[128];
+    snprintf(gps_buf, sizeof(gps_buf), "Lat: %.6f\nLon: %.6f\nSpeed: %.1f km/h\nHeading: %.1f°",
+             cached_latitude / 10000000.0, // Convert to degrees
+             cached_longitude / 10000000.0, // Convert to degrees
+             cached_speed * 0.0036, // Convert mm/s to km/h
+             cached_heading / 100000.0); // Convert to degrees
+    lv_label_set_text(gps_label, gps_buf);
 }
 
 void setup()
@@ -152,6 +183,12 @@ void setup()
     bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
     bmp.setOutputDataRate(BMP3_ODR_50_HZ);
 
+    if (myGNSS.begin() == false) //Connect to the u-blox module using Wire port
+    {
+        Serial.println(F("u-blox GNSS not detected at default I2C address. Please check wiring."));
+        while (1);
+    }
+
     lv_init();
 
     lv_color_t *buf_1 = (lv_color_t *)heap_caps_malloc(48 * 1024, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
@@ -174,12 +211,16 @@ void setup()
 
     // Create a label with "Hello World" text
     lv_obj_t * hello_label = lv_label_create(lv_scr_act());
-    lv_label_set_text(hello_label, "Hello World");
+    lv_label_set_text(hello_label, "OpenPPG");
     lv_obj_align(hello_label, LV_ALIGN_TOP_MID, 0, 10);
 
     // Create a label for sensor readings
     sensor_label = lv_label_create(lv_scr_act());
     lv_obj_align(sensor_label, LV_ALIGN_TOP_MID, 0, 40);
+
+    // Create a label for GPS readings
+    gps_label = lv_label_create(lv_scr_act());
+    lv_obj_align(gps_label, LV_ALIGN_TOP_RIGHT, -10, 50);
 
     // Create a button
     lv_obj_t * btn = lv_btn_create(lv_scr_act());
@@ -193,7 +234,7 @@ void setup()
     lv_obj_center(btn_label);
 
     // Create a timer to update sensor display
-    lv_timer_create(update_sensor_display, 100, NULL);  // Update display every 100ms
+    lv_timer_create(update_display, 100, NULL);  // Update display every 100ms
 }
 
 void loop()
