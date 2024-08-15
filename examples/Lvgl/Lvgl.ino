@@ -3,10 +3,17 @@
 #include "Arduino_GFX_Library.h"
 #include "pin_config.h"
 #include "TouchLib.h"
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include "Adafruit_BMP3XX.h"
+
+#define SEALEVELPRESSURE_HPA (1013.25)
+#define SENSOR_UPDATE_INTERVAL 1000  // Update sensor every 1000ms (1 second)
 
 static bool Touch_Int_Flag = false;
 
 TouchLib touch(Wire, TOUCH_SDA, TOUCH_SCL, CST3240_ADDRESS);
+Adafruit_BMP3XX bmp;
 
 static lv_disp_draw_buf_t draw_buf;
 static lv_disp_drv_t disp_drv;
@@ -25,6 +32,13 @@ Arduino_ESP32RGBPanel *rgbpanel = new Arduino_ESP32RGBPanel(
 Arduino_RGB_Display *gfx = new Arduino_RGB_Display(
     LCD_WIDTH, LCD_HEIGHT, rgbpanel, 0, true,
     bus, -1, st7701_type9_init_operations, sizeof(st7701_type9_init_operations));
+
+lv_obj_t *sensor_label;
+
+// Cached sensor values
+float cached_altitude = 0;
+float cached_temperature_f = 0;
+unsigned long last_sensor_update = 0;
 
 void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
@@ -78,6 +92,28 @@ static void btn_event_cb(lv_event_t * e)
     }
 }
 
+void update_sensor_readings()
+{
+    unsigned long current_time = millis();
+    if (current_time - last_sensor_update >= SENSOR_UPDATE_INTERVAL) {
+        if (bmp.performReading()) {
+            cached_altitude = bmp.readAltitude(SEALEVELPRESSURE_HPA);
+            float temperature_c = bmp.temperature;
+            cached_temperature_f = (temperature_c * 9/5) + 32;
+            last_sensor_update = current_time;
+        }
+    }
+}
+
+void update_sensor_display(lv_timer_t * timer)
+{
+    update_sensor_readings();  // This will only update the cache if enough time has passed
+
+    static char buf[64];
+    snprintf(buf, sizeof(buf), "Altitude: %.2f m\nTemp: %.2f °F", cached_altitude, cached_temperature_f);
+    lv_label_set_text(sensor_label, buf);
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -106,6 +142,16 @@ void setup()
 
     touch.init();
 
+    if (!bmp.begin_I2C()) {
+        Serial.println("Could not find a valid BMP3 sensor, check wiring!");
+        while (1);
+    }
+
+    bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
+    bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);
+    bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
+    bmp.setOutputDataRate(BMP3_ODR_50_HZ);
+
     lv_init();
 
     lv_color_t *buf_1 = (lv_color_t *)heap_caps_malloc(48 * 1024, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
@@ -131,6 +177,10 @@ void setup()
     lv_label_set_text(hello_label, "Hello World");
     lv_obj_align(hello_label, LV_ALIGN_TOP_MID, 0, 10);
 
+    // Create a label for sensor readings
+    sensor_label = lv_label_create(lv_scr_act());
+    lv_obj_align(sensor_label, LV_ALIGN_TOP_MID, 0, 40);
+
     // Create a button
     lv_obj_t * btn = lv_btn_create(lv_scr_act());
     lv_obj_set_size(btn, 120, 50);
@@ -141,6 +191,9 @@ void setup()
     lv_obj_t * btn_label = lv_label_create(btn);
     lv_label_set_text(btn_label, "Count: 0");
     lv_obj_center(btn_label);
+
+    // Create a timer to update sensor display
+    lv_timer_create(update_sensor_display, 100, NULL);  // Update display every 100ms
 }
 
 void loop()
