@@ -40,7 +40,18 @@ lv_obj_t *gps_label;
 lv_obj_t *time_label;
 lv_obj_t *unit_switch;  // New switch for unit toggle
 
-bool use_imperial = false;  // Flag to determine which units to use
+bool use_imperial = false;
+bool units_changed = false;
+
+// Pre-calculate conversion factors
+const float M_TO_FT = 3.28084f;
+const float MM_S_TO_MPH = 0.00223694f;
+const float MM_S_TO_KMH = 0.0036f;
+
+// Static buffers for formatted strings
+static char sensor_buf[64];
+static char gps_buf[128];
+static char time_buf[64];
 
 // Cached BMP sensor values
 float cached_altitude = 0;
@@ -85,10 +96,12 @@ void update_gps_readings()
         last_gps_update = current_time;
     }
 }
+
 static void unit_switch_event_cb(lv_event_t * e)
 {
     lv_obj_t * obj = lv_event_get_target(e);
     use_imperial = lv_obj_has_state(obj, LV_STATE_CHECKED);
+    units_changed = true;  // Flag that units have changed
 }
 
 void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
@@ -158,48 +171,52 @@ void update_sensor_readings()
 
 void update_display(lv_timer_t * timer)
 {
-    update_sensor_readings();
-    update_gps_readings();
+    static uint32_t last_update = 0;
+    uint32_t now = millis();
 
-    static char sensor_buf[64];
-    if (use_imperial) {
-        float altitude_ft = cached_altitude * 3.28084;
-        float temp_f = cached_temperature_f;
-        snprintf(sensor_buf, sizeof(sensor_buf), "Alt: %.2f ft\nTemp: %.2f F", altitude_ft, temp_f);
-    } else {
-        float temp_c = (cached_temperature_f - 32) * 5.0 / 9.0;
-        snprintf(sensor_buf, sizeof(sensor_buf), "Alt: %.2f m\nTemp: %.2f C", cached_altitude, temp_c);
+    // Update readings and format strings only every 1000ms or when units change
+    if (now - last_update >= 1000 || units_changed) {
+        update_sensor_readings();
+        update_gps_readings();
+
+        // Format sensor data
+        if (use_imperial) {
+            float altitude_ft = cached_altitude * M_TO_FT;
+            snprintf(sensor_buf, sizeof(sensor_buf), "Alt: %.0f ft\nTemp: %.1f F", altitude_ft, cached_temperature_f);
+        } else {
+            float temp_c = (cached_temperature_f - 32) * 5.0f / 9.0f;
+            snprintf(sensor_buf, sizeof(sensor_buf), "Alt: %.0f m\nTemp: %.1f C", cached_altitude, temp_c);
+        }
+
+        // Format GPS data
+        float speed = use_imperial ? cached_speed * MM_S_TO_MPH : cached_speed * MM_S_TO_KMH;
+        const char* speed_unit = use_imperial ? "mph" : "km/h";
+        snprintf(gps_buf, sizeof(gps_buf), "Lat: %.6f\nLon: %.6f\nSpeed: %.1f %s\nHeading: %.1f",
+                 cached_latitude / 10000000.0,
+                 cached_longitude / 10000000.0,
+                 speed,
+                 speed_unit,
+                 cached_heading / 100000.0);
+
+        // Format time data
+        if (cached_time_valid && cached_date_valid) {
+            snprintf(time_buf, sizeof(time_buf), "%04d-%02d-%02d %02d:%02d:%02d UTC",
+                     cached_year, cached_month, cached_day,
+                     cached_hour, cached_minute, cached_second);
+        } else {
+            strcpy(time_buf, "-------- --:--:-- UTC");
+        }
+
+        last_update = now;
+        units_changed = false;
     }
+
+    // Update LVGL labels (this is fast)
     lv_label_set_text(sensor_label, sensor_buf);
-
-    static char gps_buf[128];
-    if (use_imperial) {
-        float speed_mph = cached_speed * 0.00223694; // Convert mm/s to mph
-        snprintf(gps_buf, sizeof(gps_buf), "Lat: %.6f\nLon: %.6f\nSpeed: %.2f mph\nHeading: %.2f",
-                 cached_latitude / 10000000.0,
-                 cached_longitude / 10000000.0,
-                 speed_mph,
-                 cached_heading / 100000.0);
-    } else {
-        float speed_kmh = cached_speed * 0.0036; // Convert mm/s to km/h
-        snprintf(gps_buf, sizeof(gps_buf), "Lat: %.6f\nLon: %.6f\nSpeed: %.2f km/h\nHeading: %.2f",
-                 cached_latitude / 10000000.0,
-                 cached_longitude / 10000000.0,
-                 speed_kmh,
-                 cached_heading / 100000.0);
-    }
     lv_label_set_text(gps_label, gps_buf);
-
-    static char time_buf[64];
-    if (cached_time_valid && cached_date_valid) {
-        snprintf(time_buf, sizeof(time_buf), "%04d-%02d-%02d %02d:%02d:%02d UTC",
-                 cached_year, cached_month, cached_day,
-                 cached_hour, cached_minute, cached_second);
-    } else {
-        snprintf(time_buf, sizeof(time_buf), "-------- --:--:-- UTC");
-    }
     lv_label_set_text(time_label, time_buf);
 }
+
 void setup()
 {
     Serial.begin(115200);
