@@ -36,7 +36,8 @@ Arduino_RGB_Display *gfx = new Arduino_RGB_Display(
     bus, -1, st7701_type9_init_operations, sizeof(st7701_type9_init_operations));
 
 lv_obj_t *sensor_label;
-lv_obj_t *gps_label; // Add this line
+lv_obj_t *gps_label;
+lv_obj_t *time_label;
 
 // Cached BMP sensor values
 float cached_altitude = 0;
@@ -49,6 +50,15 @@ long cached_longitude = 0;
 long cached_speed = 0;
 long cached_heading = 0;
 unsigned long last_gps_update = 0;
+// Cached time values
+int cached_year = 0;
+int cached_month = 0;
+int cached_day = 0;
+int cached_hour = 0;
+int cached_minute = 0;
+int cached_second = 0;
+bool cached_time_valid = false;
+bool cached_date_valid = false;
 
 void update_gps_readings()
 {
@@ -58,10 +68,20 @@ void update_gps_readings()
         cached_longitude = myGNSS.getLongitude();
         cached_speed = myGNSS.getGroundSpeed();
         cached_heading = myGNSS.getHeading();
+
+        // Update time and date
+        cached_year = myGNSS.getYear();
+        cached_month = myGNSS.getMonth();
+        cached_day = myGNSS.getDay();
+        cached_hour = myGNSS.getHour();
+        cached_minute = myGNSS.getMinute();
+        cached_second = myGNSS.getSecond();
+        cached_time_valid = myGNSS.getTimeValid();
+        cached_date_valid = myGNSS.getDateValid();
+
         last_gps_update = current_time;
     }
 }
-
 void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
     uint32_t w = (area->x2 - area->x1 + 1);
@@ -133,16 +153,26 @@ void update_display(lv_timer_t * timer)
     update_gps_readings();
 
     static char sensor_buf[64];
-    snprintf(sensor_buf, sizeof(sensor_buf), "Alt: %.1f m\nTemp: %.1f °F", cached_altitude, cached_temperature_f);
+    snprintf(sensor_buf, sizeof(sensor_buf), "Alt: %.2f m\nTemp: %.2f F", cached_altitude, cached_temperature_f);
     lv_label_set_text(sensor_label, sensor_buf);
 
     static char gps_buf[128];
-    snprintf(gps_buf, sizeof(gps_buf), "Lat: %.6f\nLon: %.6f\nSpeed: %.1f km/h\nHeading: %.1f°",
-             cached_latitude / 10000000.0, // Convert to degrees
-             cached_longitude / 10000000.0, // Convert to degrees
-             cached_speed * 0.0036, // Convert mm/s to km/h
-             cached_heading / 100000.0); // Convert to degrees
+    snprintf(gps_buf, sizeof(gps_buf), "Lat: %.6f\nLon: %.6f\nSpeed: %.2f km/h\nHeading: %.2f",
+             cached_latitude / 10000000.0,
+             cached_longitude / 10000000.0,
+             cached_speed * 0.0036,
+             cached_heading / 100000.0);
     lv_label_set_text(gps_label, gps_buf);
+
+    static char time_buf[64];
+    if (cached_time_valid && cached_date_valid) {
+        snprintf(time_buf, sizeof(time_buf), "%04d-%02d-%02d %02d:%02d:%02d UTC",
+                 cached_year, cached_month, cached_day,
+                 cached_hour, cached_minute, cached_second);
+    } else {
+        snprintf(time_buf, sizeof(time_buf), "-------- --:--:-- UTC");
+    }
+    lv_label_set_text(time_label, time_buf);
 }
 
 void setup()
@@ -209,7 +239,7 @@ void setup()
     indev_drv.read_cb = my_touchpad_read;
     lv_indev_drv_register(&indev_drv);
 
-    // Create a label with "Hello World" text
+    // Create a label for the title
     lv_obj_t * hello_label = lv_label_create(lv_scr_act());
     lv_label_set_text(hello_label, "OpenPPG");
     lv_obj_align(hello_label, LV_ALIGN_TOP_MID, 0, 10);
@@ -221,11 +251,14 @@ void setup()
     // Create a label for GPS readings
     gps_label = lv_label_create(lv_scr_act());
     lv_obj_align(gps_label, LV_ALIGN_TOP_RIGHT, -10, 50);
+    // Create a label for UTC time and date
+    time_label = lv_label_create(lv_scr_act());
+    lv_obj_align(time_label, LV_ALIGN_BOTTOM_MID, 0, -60);
 
     // Create a button
     lv_obj_t * btn = lv_btn_create(lv_scr_act());
     lv_obj_set_size(btn, 120, 50);
-    lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -10);
     lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_ALL, NULL);
 
     // Add label to button
