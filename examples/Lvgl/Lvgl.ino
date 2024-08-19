@@ -38,6 +38,9 @@ Arduino_RGB_Display *gfx = new Arduino_RGB_Display(
 lv_obj_t *sensor_label;
 lv_obj_t *gps_label;
 lv_obj_t *time_label;
+lv_obj_t *unit_switch;  // New switch for unit toggle
+
+bool use_imperial = false;  // Flag to determine which units to use
 
 // Cached BMP sensor values
 float cached_altitude = 0;
@@ -82,6 +85,12 @@ void update_gps_readings()
         last_gps_update = current_time;
     }
 }
+static void unit_switch_event_cb(lv_event_t * e)
+{
+    lv_obj_t * obj = lv_event_get_target(e);
+    use_imperial = lv_obj_has_state(obj, LV_STATE_CHECKED);
+}
+
 void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
     uint32_t w = (area->x2 - area->x1 + 1);
@@ -153,15 +162,32 @@ void update_display(lv_timer_t * timer)
     update_gps_readings();
 
     static char sensor_buf[64];
-    snprintf(sensor_buf, sizeof(sensor_buf), "Alt: %.2f m\nTemp: %.2f F", cached_altitude, cached_temperature_f);
+    if (use_imperial) {
+        float altitude_ft = cached_altitude * 3.28084;
+        float temp_f = cached_temperature_f;
+        snprintf(sensor_buf, sizeof(sensor_buf), "Alt: %.2f ft\nTemp: %.2f F", altitude_ft, temp_f);
+    } else {
+        float temp_c = (cached_temperature_f - 32) * 5.0 / 9.0;
+        snprintf(sensor_buf, sizeof(sensor_buf), "Alt: %.2f m\nTemp: %.2f C", cached_altitude, temp_c);
+    }
     lv_label_set_text(sensor_label, sensor_buf);
 
     static char gps_buf[128];
-    snprintf(gps_buf, sizeof(gps_buf), "Lat: %.6f\nLon: %.6f\nSpeed: %.2f km/h\nHeading: %.2f",
-             cached_latitude / 10000000.0,
-             cached_longitude / 10000000.0,
-             cached_speed * 0.0036,
-             cached_heading / 100000.0);
+    if (use_imperial) {
+        float speed_mph = cached_speed * 0.00223694; // Convert mm/s to mph
+        snprintf(gps_buf, sizeof(gps_buf), "Lat: %.6f\nLon: %.6f\nSpeed: %.2f mph\nHeading: %.2f",
+                 cached_latitude / 10000000.0,
+                 cached_longitude / 10000000.0,
+                 speed_mph,
+                 cached_heading / 100000.0);
+    } else {
+        float speed_kmh = cached_speed * 0.0036; // Convert mm/s to km/h
+        snprintf(gps_buf, sizeof(gps_buf), "Lat: %.6f\nLon: %.6f\nSpeed: %.2f km/h\nHeading: %.2f",
+                 cached_latitude / 10000000.0,
+                 cached_longitude / 10000000.0,
+                 speed_kmh,
+                 cached_heading / 100000.0);
+    }
     lv_label_set_text(gps_label, gps_buf);
 
     static char time_buf[64];
@@ -174,7 +200,6 @@ void update_display(lv_timer_t * timer)
     }
     lv_label_set_text(time_label, time_buf);
 }
-
 void setup()
 {
     Serial.begin(115200);
@@ -254,6 +279,17 @@ void setup()
     // Create a label for UTC time and date
     time_label = lv_label_create(lv_scr_act());
     lv_obj_align(time_label, LV_ALIGN_BOTTOM_MID, 0, -60);
+
+    // Create a switch for unit toggle
+    unit_switch = lv_switch_create(lv_scr_act());
+    lv_obj_add_event_cb(unit_switch, unit_switch_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_align(unit_switch, LV_ALIGN_BOTTOM_RIGHT, -10, -10);
+
+    // Create a label for the switch
+    lv_obj_t * switch_label = lv_label_create(lv_scr_act());
+    lv_label_set_text(switch_label, "Imperial");
+    lv_obj_align_to(switch_label, unit_switch, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+
 
     // Create a button
     lv_obj_t * btn = lv_btn_create(lv_scr_act());
